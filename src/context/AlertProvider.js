@@ -1,35 +1,35 @@
-import React, { createContext, useCallback, useEffect, useReducer } from 'react'
-
+import React, { createContext, useCallback, useReducer } from 'react'
+import { v4 as uuidv4 } from 'uuid'
+import Toasts from '../components/Toasts'
 export const AlertContext = createContext(null)
 
 const SET_ALERT_DATA_ACTION = 'SET_ALERT_DATA'
 const SET_VISIBILITY_ACTION = 'SET_VISIBILITY'
 const RESET_ALERT_ACTION = 'RESET_ALERT'
 const TRIGGER_ALERT_ACTION = 'TRIGGER_ALERT'
+const REMOVE_ONE_ALERT_ACTION = 'REMOVE_ONE_ALERT'
 
 const alertReducer = (state, action) => {
     switch (action.type) {
         case SET_ALERT_DATA_ACTION:
             return {
                 ...state,
-                data: action.payload.data, // data: { severity: 'success', title: 'my title', description: 'my desc'}
-            }
-        case SET_VISIBILITY_ACTION:
-            return {
-                ...state,
-                isOpen: action.payload.isOpen,
+                data: [...state.data, { ...action.payload, id: uuidv4() }], // data: { severity: 'success', title: 'my title', description: 'my desc'}
             }
         case RESET_ALERT_ACTION:
             return {
                 ...state,
-                isOpen: false,
-                data: {},
+                data: [],
             }
         case TRIGGER_ALERT_ACTION:
             return {
                 ...state,
-                isOpen: true,
-                data: action.payload,
+                data: [...state.data, { ...action.payload, id: uuidv4() }],
+            }
+        case REMOVE_ONE_ALERT_ACTION:
+            return {
+                ...state,
+                data: state.data.filter(({ id }) => id !== action.payload),
             }
         default:
             return state
@@ -39,7 +39,7 @@ const alertReducer = (state, action) => {
 const AlertProvider = ({ children }) => {
     const initialState = {
         isOpen: false,
-        data: {},
+        data: [],
     }
     const [alert, dispatch] = useReducer(alertReducer, initialState)
 
@@ -59,14 +59,9 @@ const AlertProvider = ({ children }) => {
         dispatch({ type: TRIGGER_ALERT_ACTION, payload })
     }, [])
 
-    useEffect(() => {
-        const timeoutId = setTimeout(() => {
-            closeAlert()
-        }, 5000)
-        return () => {
-            clearTimeout(timeoutId)
-        }
-    }, [alert.isOpen])
+    const removeAlert = useCallback(payload => {
+        dispatch({ type: REMOVE_ONE_ALERT_ACTION, payload })
+    }, [])
 
     return (
         <AlertContext.Provider
@@ -78,8 +73,10 @@ const AlertProvider = ({ children }) => {
                 showAlert,
                 setAlertData,
                 triggerAlert,
+                removeAlert,
             }}
         >
+            <Toasts />
             {children}
         </AlertContext.Provider>
     )
