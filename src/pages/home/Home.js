@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 import { useEffect, useMemo, useState } from 'react'
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd'
 import { createUseStyles } from 'react-jss'
@@ -83,6 +84,7 @@ const Homepage = () => {
      * @returns {Promise<void>}
      */
     const onEditTask = async (oldTask, newTask) => {
+        console.log('oldTask', oldTask)
         try {
             const { data } = await TasksAPI.editTask(newTask)
             onUpdateItem(oldTask, data)
@@ -96,7 +98,8 @@ const Homepage = () => {
     const onUpdateItem = (oldItem, updatedItem) => {
         let newTasks = tasks
         const isDateChanged =
-            updatedItem[TASK_MODEL.date] !== oldItem[TASK_MODEL.date] &&
+            dayjs(updatedItem[TASK_MODEL.date]).format('YYYY-MM-DD') !==
+                dayjs(oldItem[TASK_MODEL.date]).format('YYYY-MM-DD') &&
             !(
                 isBeforeToday(oldItem[TASK_MODEL.date]) &&
                 isBeforeToday(updatedItem[TASK_MODEL.date])
@@ -104,8 +107,9 @@ const Homepage = () => {
 
         if (isDateChanged) {
             //remove the task from old list
+
             if (isBeforeToday(oldItem[TASK_MODEL.date])) {
-                newTasks['Expired'].filter(
+                newTasks['Expired'] = newTasks['Expired'].filter(
                     task => task[TASK_MODEL.id] !== updatedItem[TASK_MODEL.id]
                 )
             } else {
@@ -219,6 +223,8 @@ const Homepage = () => {
             )
             newState[sInd] = result[sInd]
             newState[dInd] = result[dInd]
+            const task = newState[dInd][destination.index]
+            onEditTask(task, { ...task, date: dInd })
             setTasks({ ...newState })
         }
 
