@@ -4,12 +4,12 @@ import * as PropTypes from 'prop-types'
 import cx from 'classnames'
 import { AlertIcon, SuccessIcon } from '../theme/icons'
 
-const useStyles = createUseStyles((theme) => ({
+const useStyles = createUseStyles(theme => ({
     root: {
         position: 'relative',
         '& label': {
-            paddingLeft: theme.spacing * 2
-        }
+            paddingLeft: theme.spacing * 2,
+        },
     },
     inputWrapper: ({
         hasError,
@@ -17,17 +17,19 @@ const useStyles = createUseStyles((theme) => ({
         touched,
         rounded,
         iconPosition,
-        icon
+        icon,
     }) => ({
         position: 'relative',
         margin: [theme.spacing / 2, 0],
         width: '100%',
         '& input': {
-            border:'none',
+            border: 'none',
             backgroundColor: `#FFF`,
             boxShadow: `0px 1px 2px rgba(0, 0, 0, 0.05);`,
             paddingLeft:
-                icon && iconPosition === 'left' ? theme.spacing * 6 : theme.spacing * 2,
+                icon && iconPosition === 'left'
+                    ? theme.spacing * 6
+                    : theme.spacing * 2,
             paddingRight: touched ? theme.spacing * 10 : theme.spacing * 6,
             ...(rounded && { borderRadius: 12 }),
             ...(hasError && { ...theme.controls.inputError }),
@@ -40,7 +42,7 @@ const useStyles = createUseStyles((theme) => ({
         ...(iconPosition === 'left'
             ? { left: theme.spacing * 2 }
             : { right: theme.spacing * 2 }),
-        transform: 'translateY(-50%)',
+
         display: 'flex',
         gap: theme.spacing / 2,
         zIndex: 1,
