@@ -125,6 +125,7 @@ const Button = ({
     isLight = false,
     onClick,
     className,
+    fullWidth,
     ...props
 }) => {
     const classes = useStyles({
@@ -142,6 +143,7 @@ const Button = ({
         <button
             className={cx(classes.root, className)}
             {...props}
+            fullwidth={`${fullWidth}`}
             type={type}
             onClick={onClick}
             disabled={disabled}

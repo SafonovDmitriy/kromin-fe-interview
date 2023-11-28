@@ -97,6 +97,7 @@ const Input = forwardRef(function Input(
         errors,
         rootClassName,
         inputProps,
+        value,
         variant = 'normal',
         ...rest
     },
@@ -133,6 +134,7 @@ const Input = forwardRef(function Input(
                     onChange={onChange}
                     onBlur={onBlur}
                     ref={ref}
+                    value={value}
                     {...inputProps}
                 />
                 <span className={classes.statusIcons}>
