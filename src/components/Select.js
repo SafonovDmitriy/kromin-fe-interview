@@ -42,7 +42,7 @@ const Select = ({
         control,
         defaultValue,
     })
-    console.log('fieldProps', fieldProps)
+
     // This extend the default onChange
     const onChangeHandler = ({ value }) => {
         if (typeof onChangeCallback === 'function') onChangeCallback(value)

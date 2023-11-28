@@ -57,7 +57,6 @@ const EditTaskModal = ({ onClose, onUpdateCb, task }) => {
     const classes = useStyles()
 
     const onSubmit = formValues => {
-        console.log('formValues', formValues)
         onUpdateCb &&
             onUpdateCb(
                 { ...task },
@@ -94,13 +93,13 @@ const EditTaskModal = ({ onClose, onUpdateCb, task }) => {
     })
 
     const description = useWatch({ name: TASK_MODEL.description, control })
-    console.log('task', task)
+
     return (
         <Popover
             onClose={onClose}
             buttonPrimary={{
                 text: 'Done',
-                disabled: !description || !date,
+                disabled: !description || !date || !effort,
                 onClick: handleSubmit(onSubmit),
             }}
             buttonSecondary={{

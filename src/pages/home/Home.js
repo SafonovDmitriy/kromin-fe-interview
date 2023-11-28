@@ -84,7 +84,6 @@ const Homepage = () => {
      * @returns {Promise<void>}
      */
     const onEditTask = async (oldTask, newTask) => {
-        console.log('oldTask', oldTask)
         try {
             const { data } = await TasksAPI.editTask(newTask)
             onUpdateItem(oldTask, data)
