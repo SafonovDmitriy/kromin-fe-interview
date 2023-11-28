@@ -1,7 +1,7 @@
-import {createUseStyles, useTheme} from "react-jss";
+import { createUseStyles, useTheme } from 'react-jss'
 import ReactSelect from 'react-select'
-import React from "react";
-import {CrossIcon} from "../theme/icons";
+import React from 'react'
+import { CrossIcon } from '../theme/icons'
 
 const useStyles = createUseStyles(theme => ({
     root: {
@@ -9,25 +9,23 @@ const useStyles = createUseStyles(theme => ({
     },
 }))
 
-
 const ControlledSelect = ({
-                       name,
-                       options,
-                       label,
-                       placeholder,
-                       helpText,
-                       defaultValue = '',
-                       isSearchable = false,
-                       isClearable = false,
-                       isCreatable = false,
-                       addOptionMessage,
-                       onChangeCallback,
-                       closeMenuOnSelect = true,
-                       menuPlacement = 'bottom',
-                       onClear = () => onChangeCallback(false),
-                       ...props
-                   }) => {
-
+    name,
+    options,
+    label,
+    placeholder,
+    helpText,
+    defaultValue = '',
+    isSearchable = false,
+    isClearable = false,
+    isCreatable = false,
+    addOptionMessage,
+    onChangeCallback,
+    closeMenuOnSelect = true,
+    menuPlacement = 'bottom',
+    onClear = () => onChangeCallback(false),
+    ...props
+}) => {
     const classes = useStyles()
     const theme = useTheme()
 
@@ -39,7 +37,7 @@ const ControlledSelect = ({
             fontWeight: 400,
             fontSize: 14,
             margin: 0,
-            textAlign: 'center'
+            textAlign: 'center',
         }),
         valueContainer: (defaults, state) => ({
             ...defaults,
@@ -53,7 +51,7 @@ const ControlledSelect = ({
             color: theme.palette.grey[500],
             fontWeight: 400,
             fontSize: 14,
-            textAlign: 'center'
+            textAlign: 'center',
         }),
         control: (defaults, { isDisabled, isFocused }) => ({
             ...defaults,
@@ -77,7 +75,7 @@ const ControlledSelect = ({
                 minHeight: 40,
                 minWidth: 116,
                 padding: `4px 12px`,
-            }
+            },
         }),
         option: (provided, { isDisabled, isFocused, isSelected }) => ({
             ...provided,
@@ -95,7 +93,7 @@ const ControlledSelect = ({
             fontSize: 16,
             borderRadius: 4,
         }),
-        indicatorsContainer: (defaults) => ({
+        indicatorsContainer: defaults => ({
             ...defaults,
             display: 'flex',
             alignItems: 'center',
@@ -106,34 +104,34 @@ const ControlledSelect = ({
                 fill: theme.palette.grey[500],
             },
         }),
-        indicatorSeparator: (defaults) => ({
+        indicatorSeparator: defaults => ({
             ...defaults,
             width: 0,
             padding: 0,
         }),
-        menu: (defaults) => ({
+        menu: defaults => ({
             ...defaults,
             zIndex: 20,
             borderRadius: 10,
             overflow: 'hidden',
         }),
-        menuList: (defaults) => ({
+        menuList: defaults => ({
             ...defaults,
             padding: 0,
             margin: 8,
         }),
-        dropdownIndicator: (defaults) => ({
+        dropdownIndicator: defaults => ({
             ...defaults,
             padding: '2px',
         }),
-        clearIndicator: (defaults) => ({
+        clearIndicator: defaults => ({
             ...defaults,
             borderRadius: '50px',
             marginRight: 4,
             padding: 0,
             backgroundColor: 'transparent',
         }),
-        multiValueLabel: (defaults) => ({
+        multiValueLabel: defaults => ({
             ...defaults,
             textTransform: isCreatable ? 'uppercase' : 'none',
             padding: 0,
@@ -165,45 +163,47 @@ const ControlledSelect = ({
     }
 
     const onChangeHandler = (selected, { action }) => {
-        if (action === "clear") {
+        if (action === 'clear') {
             onClear && onClear()
             return
         }
-        console.log('change')
-        onChangeCallback(selected);
+        onChangeCallback(selected)
     }
-    return (<div className={classes.root}>
-        {!!label && <label>{label}</label>}
-        <ReactSelect
-            onChange={onChangeHandler}
-            menuPlacement={menuPlacement}
-            components={{ DropdownIndicator: null, ClearIndicator }}
-            clearRenderer={() => <CrossIcon width={8} height={8}/>}
-            {...selectProps}
-        />
-        {helpText && (
-            <div>
-                <small>{helpText}</small>
-            </div>
-        )}
-    </div>
-)
+    return (
+        <div className={classes.root}>
+            {!!label && <label>{label}</label>}
+            <ReactSelect
+                onChange={onChangeHandler}
+                menuPlacement={menuPlacement}
+                components={{ DropdownIndicator: null, ClearIndicator }}
+                clearRenderer={() => <CrossIcon width={8} height={8} />}
+                {...selectProps}
+            />
+            {helpText && (
+                <div>
+                    <small>{helpText}</small>
+                </div>
+            )}
+        </div>
+    )
 }
 
-const ClearIndicator = (props) => {
+const ClearIndicator = props => {
     const {
-        children = <CrossIcon width={8} height={8}/>,
+        children = <CrossIcon width={8} height={8} />,
         getStyles,
         innerProps: { ref, ...restInnerProps },
-    } = props;
+    } = props
     return (
         <div
             {...restInnerProps}
             ref={ref}
-            style={{...getStyles('clearIndicator', props)}}
+            style={{ ...getStyles('clearIndicator', props) }}
         >
-            <div style={{ padding: '0px 5px', display: 'flex' }}>{children}</div>
+            <div style={{ padding: '0px 5px', display: 'flex' }}>
+                {children}
+            </div>
         </div>
-    );
-};
-export default ControlledSelect;
+    )
+}
+export default ControlledSelect

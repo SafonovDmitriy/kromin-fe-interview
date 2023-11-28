@@ -1,15 +1,16 @@
-import { createUseStyles } from 'react-jss'
-import useAlert from '../hooks/useAlert'
-import { Fragment, useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
+import { Fragment, useEffect, useRef } from 'react'
+import { createUseStyles } from 'react-jss'
+import checkCircle from '../assets/images/check-circle.svg'
 import emojiSad from '../assets/images/emoji-sad.svg'
 import closeImage from '../assets/images/eva_close-outline.svg'
-import checkCircle from '../assets/images/check-circle.svg'
+import useAlert from '../hooks/useAlert'
 const heightToast = 44
 const useStyles = createUseStyles(theme => {
     return {
         toastList: {
             position: 'absolute',
+            zIndex: 2,
             top: '50px',
             right: '15px',
             display: 'flex',
@@ -21,9 +22,7 @@ const useStyles = createUseStyles(theme => {
             flexDirection: 'row',
             alignItems: 'center',
             background: props => props?.background || '#FFF',
-
             height: `${heightToast}px`,
-
             padding: '10px',
             borderRadius: '8px',
             gap: '10px',
@@ -62,7 +61,6 @@ const SEVERITYS = {
 
 const Toasts = () => {
     const { alertData } = useAlert()
-    console.log('alertData', alertData)
     const classes = useStyles()
 
     return (

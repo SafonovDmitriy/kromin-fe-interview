@@ -1,10 +1,14 @@
+import { useEffect, useMemo, useState } from 'react'
+import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd'
 import { createUseStyles } from 'react-jss'
+import Column from '../../components/Column'
 import Container from '../../components/Container'
 import Row from '../../components/Row'
-import Column from '../../components/Column'
-import TasksAPI from '../../http/task.http'
+import Task from '../../components/Task'
 import useError from '../../hooks/useError'
-import { useEffect, useMemo, useState } from 'react'
+import { useWindowSize } from '../../hooks/useWindowSize'
+import TasksAPI from '../../http/task.http'
+import { TASK_MODEL } from '../../models'
 import {
     dateIsInRange,
     dateRenderer,
@@ -15,14 +19,10 @@ import {
     objToFlatArray,
     reorderItems,
 } from '../../utilities/helpers'
-import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd'
-import Task from '../../components/Task'
+import EditTaskModal from './EditTaskModal'
+import FilterBar from './filter-bar/FilterBar'
 import HomeTableHeader from './home-table-heading'
 import TodoInputBar from './todo-input-bar/TodoInputBar'
-import FilterBar from './filter-bar/FilterBar'
-import { useWindowSize } from '../../hooks/useWindowSize'
-import EditTaskModal from './EditTaskModal'
-import { TASK_MODEL } from '../../models'
 
 const useStyles = createUseStyles(theme => ({
     taskBodyRoot: {
@@ -376,6 +376,7 @@ const Homepage = () => {
                         setShowEditModal(false)
                     }}
                     task={openedTask}
+                    onUpdateCb={onEditTask}
                 />
             )}
             <TodoInputBar

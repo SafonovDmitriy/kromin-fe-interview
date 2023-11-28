@@ -22,6 +22,8 @@ const useStyles = createUseStyles(theme => ({
         position: 'relative',
         margin: [theme.spacing / 2, 0],
         width: '100%',
+        display: 'flex',
+        alignItems: 'center',
         '& input': {
             border: 'none',
             backgroundColor: `#FFF`,
@@ -38,7 +40,6 @@ const useStyles = createUseStyles(theme => ({
     }),
     icons: ({ iconPosition }) => ({
         position: 'absolute',
-        top: '50%',
         ...(iconPosition === 'left'
             ? { left: theme.spacing * 2 }
             : { right: theme.spacing * 2 }),
