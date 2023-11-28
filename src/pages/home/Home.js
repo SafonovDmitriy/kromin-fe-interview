@@ -367,6 +367,7 @@ const Homepage = () => {
                                                         )
                                                     )}
                                                 </div>
+                                                {provided.placeholder}
                                             </div>
                                         )}
                                     </Droppable>
