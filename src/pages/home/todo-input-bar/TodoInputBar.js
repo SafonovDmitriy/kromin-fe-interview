@@ -248,6 +248,7 @@ const TodoInputBar = ({ task = {}, onAddTaskCb, onEditTaskCb, onCancelCb }) => {
                                     <DatePickerInput
                                         value={date}
                                         callback={setDate}
+                                        minDate={new Date()}
                                     />
                                     <ControlledSelect
                                         onChangeCallback={setPriority}

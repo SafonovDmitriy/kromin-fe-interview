@@ -47,19 +47,12 @@ export const dateRenderer = date => {
         return date === 'Expired' ? date : dayjs(date).format('DD-MM-YYYY')
     }
 }
-
-export const effortRenderer = effort => {
-    switch (effort) {
-        case 1:
-            return '!'
-        case 2:
-            return '!!'
-        case 3:
-            return '!!!'
-        default:
-            return ''
-    }
+const EFFORT_LIST = {
+    1: '!',
+    2: '!!',
+    3: '!!!',
 }
+export const effortRenderer = effort => EFFORT_LIST[effort] || ''
 
 export const groupByDate = array =>
     array.reduce(

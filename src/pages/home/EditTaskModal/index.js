@@ -131,7 +131,11 @@ const EditTaskModal = ({ onClose, onUpdateCb, task }) => {
                     />
                 </div>
                 <div className={classes.buttons}>
-                    <DatePickerInput value={date} callback={setDate} />
+                    <DatePickerInput
+                        value={date}
+                        callback={setDate}
+                        minDate={new Date()}
+                    />
                     <Select
                         control={control}
                         name={TASK_MODEL.effort}

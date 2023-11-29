@@ -32,7 +32,7 @@ const useStyles = createUseStyles(theme => ({
         overflow: 'scroll',
         paddingBottom: 40,
         [theme.mediaQueries.lUp]: {
-            paddingBottom: 16,
+            paddingBottom: 90,
         },
     },
     section: {
@@ -247,7 +247,15 @@ const Homepage = () => {
             newTasks[newItem?.date] = newTasks[newItem?.date] || []
             newTasks[newItem?.date].push(newItem)
         }
-        setTasks({ ...newTasks })
+        setTasks({
+            ...groupByDate(
+                Object.values(newTasks).reduce((acc, date) => {
+                    acc.push(...date)
+                    return acc
+                }, [])
+            ),
+        })
+        // setTasks({ ...newTasks })
     }
 
     const filteredTasks = useMemo(() => {
