@@ -26,6 +26,7 @@ import FilterBar from './filter-bar/FilterBar'
 import HomeTableHeader from './home-table-heading'
 import TodoInputBar from './todo-input-bar/TodoInputBar'
 import { SEVERITY_KEYS } from '../../components/Toasts/components/Toast'
+import { POSITION_TOASTS } from '../../components/Toasts/Toasts'
 
 const useStyles = createUseStyles(theme => ({
     taskBodyRoot: {
@@ -263,12 +264,12 @@ const Homepage = () => {
         triggerAlert({
             severity: SEVERITY_KEYS.success,
             title: 'A new task has been created to successfully',
-            position: 'rightBottom',
+            position: POSITION_TOASTS.rightTop,
         })
         triggerAlert({
             severity: SEVERITY_KEYS.undo,
             title: 'Was it created by mistake?',
-            position: 'rightBottom',
+            position: POSITION_TOASTS.rightBottom,
             delay: 5000,
             action: () => {
                 onDeleteTask(

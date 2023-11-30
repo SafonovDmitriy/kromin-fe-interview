@@ -12,12 +12,12 @@ const useStyles = createUseStyles(theme => {
         gap: '15px',
     }
     return {
-        toastListRT: {
+        'toastList-rightTop': {
             ...stylesList,
             top: '50px',
             right: '15px',
         },
-        toastListRB: {
+        'toastList-rightBottom': {
             ...stylesList,
             bottom: '50px',
             right: '15px',
@@ -25,38 +25,38 @@ const useStyles = createUseStyles(theme => {
     }
 })
 
-const POSITION = { rightTop: 'rightTop', rightBottom: 'rightBottom' }
+export const POSITION_TOASTS = {
+    rightTop: 'rightTop',
+    rightBottom: 'rightBottom',
+}
 
 const Toasts = () => {
     const { alertData } = useAlert()
     const classes = useStyles()
 
     const toasts = alertData.reduce((acc, toast) => {
-        const position = toast.position || POSITION.rightTop
+        const position = toast.position || POSITION_TOASTS.rightTop
         !!acc[position] ? acc[position].push(toast) : (acc[position] = [toast])
         return acc
     }, {})
 
     return (
         <>
-            {!!toasts.rightTop && (
-                <div className={classes.toastListRT}>
-                    {toasts[POSITION.rightTop]?.map(toast => (
-                        <Fragment key={toast.id}>
-                            <Toast toast={toast} />
-                        </Fragment>
-                    ))}
-                </div>
-            )}
-            {!!toasts.rightBottom && (
-                <div className={classes.toastListRB}>
-                    {toasts[POSITION.rightBottom]?.map(toast => (
-                        <Fragment key={toast.id}>
-                            <Toast toast={toast} />
-                        </Fragment>
-                    ))}
-                </div>
-            )}
+            {Object.values(POSITION_TOASTS).map(position => (
+                <Fragment key={position}>
+                    {toasts[position] ? (
+                        <div className={classes[`toastList-${position}`]}>
+                            {toasts[position]?.map(toast => (
+                                <Fragment key={toast.id}>
+                                    <Toast toast={toast} />
+                                </Fragment>
+                            ))}
+                        </div>
+                    ) : (
+                        <></>
+                    )}
+                </Fragment>
+            ))}
         </>
     )
 }
