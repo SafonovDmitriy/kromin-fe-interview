@@ -24,6 +24,7 @@ import EditTaskModal from './EditTaskModal'
 import FilterBar from './filter-bar/FilterBar'
 import HomeTableHeader from './home-table-heading'
 import TodoInputBar from './todo-input-bar/TodoInputBar'
+import useAlert from '../../hooks/useAlert'
 
 const useStyles = createUseStyles(theme => ({
     taskBodyRoot: {
@@ -49,6 +50,7 @@ const useStyles = createUseStyles(theme => ({
 
 const Homepage = () => {
     const showError = useError()
+    const { triggerAlert } = useAlert()
     const [searchInput, setSearchInput] = useState('')
     const [tasks, setTasks] = useState(null)
     const [dateFilter, setDateFilters] = useState('')
@@ -255,7 +257,11 @@ const Homepage = () => {
                 }, [])
             ),
         })
-        // setTasks({ ...newTasks })
+        triggerAlert({
+            severity: 'undo',
+            title: 'my title',
+            position: 'rightBottom',
+        })
     }
 
     const filteredTasks = useMemo(() => {

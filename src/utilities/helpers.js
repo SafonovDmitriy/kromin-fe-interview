@@ -105,7 +105,6 @@ export const moveItems = (
 export const objToFlatArray = obj => {
     let result = []
     Object.keys(obj).forEach(key => {
-        console.log('key', key)
         const array = obj[key]
         result = [...result, ...array]
     })
