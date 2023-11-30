@@ -157,7 +157,6 @@ const TodoInputBar = ({ task = {}, onAddTaskCb, onEditTaskCb, onCancelCb }) => {
             }
             reset()
         } catch (error) {
-            console.log('error', error)
             handleApiError({
                 error,
                 handleGeneralError: showError,
@@ -208,15 +207,16 @@ const TodoInputBar = ({ task = {}, onAddTaskCb, onEditTaskCb, onCancelCb }) => {
                     onClick={() => setIsOpen(false)}
                 />
             )}
-            <div
-                className={classes.root}
-                onClick={() => {
-                    setIsOpen(true)
-                }}
-            >
+            <div className={classes.root}>
                 <Container className={classes.sliderContainer}>
                     <Row>
-                        <Column start={2} span={10}>
+                        <Column
+                            start={2}
+                            span={10}
+                            onClick={() => {
+                                setIsOpen(true)
+                            }}
+                        >
                             <div className={classes.wrapper}>
                                 {isOpen && (
                                     <span

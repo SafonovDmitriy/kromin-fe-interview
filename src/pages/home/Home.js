@@ -6,6 +6,7 @@ import Column from '../../components/Column'
 import Container from '../../components/Container'
 import Row from '../../components/Row'
 import Task from '../../components/Task'
+import useAlert from '../../hooks/useAlert'
 import useError from '../../hooks/useError'
 import { useWindowSize } from '../../hooks/useWindowSize'
 import TasksAPI from '../../http/task.http'
@@ -24,16 +25,16 @@ import EditTaskModal from './EditTaskModal'
 import FilterBar from './filter-bar/FilterBar'
 import HomeTableHeader from './home-table-heading'
 import TodoInputBar from './todo-input-bar/TodoInputBar'
-import useAlert from '../../hooks/useAlert'
+import { SEVERITY_KEYS } from '../../components/Toasts/components/Toast'
 
 const useStyles = createUseStyles(theme => ({
     taskBodyRoot: {
         paddingTop: 0,
-        height: `calc(${window.innerHeight}px - 184px)`,
-        overflow: 'scroll',
+        height: `calc(${window.innerHeight}px - 184px - 58px)`,
+        overflow: 'auto',
         paddingBottom: 40,
         [theme.mediaQueries.lUp]: {
-            paddingBottom: 90,
+            paddingBottom: 16,
         },
     },
     section: {
@@ -65,6 +66,7 @@ const Homepage = () => {
 
     useEffect(() => {
         fetchTasks()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     const fetchTasks = async () => {
@@ -158,6 +160,7 @@ const Homepage = () => {
      * @returns {Promise<void>}
      */
     const onDeleteTask = async (task, index) => {
+        console.log('index', index)
         try {
             await TasksAPI.deleteTask(task[TASK_MODEL.id])
             onDeleteItem(task[TASK_MODEL.date], index)
@@ -258,9 +261,23 @@ const Homepage = () => {
             ),
         })
         triggerAlert({
-            severity: 'undo',
-            title: 'my title',
+            severity: SEVERITY_KEYS.success,
+            title: 'A new task has been created to successfully',
             position: 'rightBottom',
+        })
+        triggerAlert({
+            severity: SEVERITY_KEYS.undo,
+            title: 'Was it created by mistake?',
+            position: 'rightBottom',
+            delay: 5000,
+            action: () => {
+                onDeleteTask(
+                    newItem,
+                    newTasks[newItem.date].findIndex(
+                        task => task.id === newItem.id
+                    )
+                )
+            },
         })
     }
 

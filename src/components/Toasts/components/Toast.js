@@ -4,20 +4,28 @@ import { createUseStyles } from 'react-jss'
 import checkCircle from '../../../assets/images/check-circle.svg'
 import emojiSad from '../../../assets/images/emoji-sad.svg'
 import closeImage from '../../../assets/images/eva_close-outline.svg'
+import undoArrow from '../../../assets/images/undo.svg'
+
 import useAlert from '../../../hooks/useAlert'
 import Timer from './Timer'
 
 const heightToast = 44
+
+export const SEVERITY_KEYS = {
+    error: 'error',
+    success: 'success',
+    undo: 'undo',
+}
 const SEVERITYS = {
-    error: {
+    [SEVERITY_KEYS.error]: {
         background: '#CD2B31CC',
         image: emojiSad,
     },
-    success: {
+    [SEVERITY_KEYS.success]: {
         background: '#18794ECC',
         image: checkCircle,
     },
-    undo: { background: '#11181C', isTimer: true },
+    [SEVERITY_KEYS.undo]: { background: '#11181C', isTimer: true },
 }
 
 const useStyles = createUseStyles(theme => ({
@@ -31,7 +39,8 @@ const useStyles = createUseStyles(theme => ({
         borderRadius: '8px',
         gap: '10px',
         overflow: 'hidden',
-        opacity: 50,
+        justifyContent: 'space-between',
+
         '& img': {
             height: '16px',
         },
@@ -49,6 +58,19 @@ const useStyles = createUseStyles(theme => ({
         fontWeight: '700',
         lineHeight: 'normal',
         letterSpacing: '0.3px',
+    },
+    undoButton: {
+        color: '#F07478',
+        textAlign: 'center',
+        fontFeatureSettings: `'case' on`,
+        fontFamily: 'Inter',
+        fontSize: '14px',
+        fontStyle: 'normal',
+        fontWeight: '500',
+        lineHeight: '140%',
+        display: 'flex',
+        gap: '8px',
+        cursor: 'pointer',
     },
 }))
 
@@ -87,8 +109,17 @@ const Toast = ({ toast }) => {
             {!!stylesConfig.image && <img src={stylesConfig.image} alt="" />}
             {!!stylesConfig.isTimer && <Timer ms={delay} />}
             <span className={classes.alertTitle}>{toast.title}</span>
-            {!!toast.closeButton ? (
-                toast.closeButton()
+            {toast?.severity === SEVERITY_KEYS.undo ? (
+                <div
+                    className={classes.undoButton}
+                    onClick={() => {
+                        toast.action?.()
+                        removeAlert(toast.id)
+                    }}
+                >
+                    <img src={undoArrow} alt="undo" />
+                    Undo
+                </div>
             ) : (
                 <img
                     src={closeImage}
