@@ -53,7 +53,6 @@ const useStyles = createUseStyles(theme => ({
 
 const EditTaskModal = ({ onClose, onUpdateCb, task }) => {
     const [date, setDate] = useState(task[TASK_MODEL.date])
-    const [effort, setEffort] = useState(task[TASK_MODEL.effort])
     const classes = useStyles()
 
     const onSubmit = formValues => {
@@ -63,7 +62,6 @@ const EditTaskModal = ({ onClose, onUpdateCb, task }) => {
                 {
                     ...task,
                     ...formValues,
-                    [TASK_MODEL.effort]: formValues[TASK_MODEL.effort],
                     date: dayjs(date).format('YYYY-MM-DD'),
                 }
             )
@@ -93,6 +91,7 @@ const EditTaskModal = ({ onClose, onUpdateCb, task }) => {
     })
 
     const description = useWatch({ name: TASK_MODEL.description, control })
+    const effort = useWatch({ name: TASK_MODEL.effort, control })
 
     return (
         <Popover
@@ -112,7 +111,6 @@ const EditTaskModal = ({ onClose, onUpdateCb, task }) => {
                         [TASK_MODEL.effort]: 0,
                     })
                     setDate('')
-                    setEffort(0)
                 },
             }}
         >
@@ -143,9 +141,6 @@ const EditTaskModal = ({ onClose, onUpdateCb, task }) => {
                         isClearable
                         menuPlacement={'top'}
                         options={TASK_PRIORITIES}
-                        onChangeCallback={value => {
-                            setEffort(value)
-                        }}
                         value={
                             effort > 0
                                 ? TASK_PRIORITIES.find(

@@ -97,7 +97,7 @@ const Homepage = () => {
             triggerAlert({
                 severity: SEVERITY_KEYS.success,
                 title: 'A new task has been update to successfully',
-                position: POSITION_TOASTS.rightTop,
+                position: POSITION_TOASTS.rightBottom,
             })
             onUpdateItem(oldTask, data, isUndo, newIndex)
         } catch (error) {
@@ -226,7 +226,7 @@ const Homepage = () => {
             triggerAlert({
                 severity: SEVERITY_KEYS.success,
                 title: 'A new task has been delete to successfully',
-                position: POSITION_TOASTS.rightTop,
+                position: POSITION_TOASTS.rightBottom,
             })
             onDeleteItem(task[TASK_MODEL.date], index, isUndo)
         } catch (error) {
@@ -337,7 +337,7 @@ const Homepage = () => {
         triggerAlert({
             severity: SEVERITY_KEYS.success,
             title: 'A new task has been created to successfully',
-            position: POSITION_TOASTS.rightTop,
+            position: POSITION_TOASTS.rightBottom,
         })
         onAddItem(data, isUndo)
     }
