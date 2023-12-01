@@ -1,7 +1,7 @@
 import { Fragment } from 'react'
 import { createUseStyles } from 'react-jss'
 import useAlert from '../../hooks/useAlert'
-import Toast from './components/Toast'
+import Toast, { SEVERITY_KEYS } from './components/Toast'
 
 const useStyles = createUseStyles(theme => {
     const stylesList = {
@@ -31,11 +31,25 @@ export const POSITION_TOASTS = {
 }
 
 const Toasts = () => {
-    const { alertData } = useAlert()
+    const { removeAlert, alertData } = useAlert()
     const classes = useStyles()
 
     const toasts = Object.groupBy(alertData, ({ position }) => position)
 
+    const undo = e => {
+        var evtobj = window.event || e
+        if (evtobj.keyCode === 90 && evtobj.ctrlKey) {
+            const lastUndoToast = alertData
+                .filter(({ severity }) => severity === SEVERITY_KEYS.undo)
+                .at(-1)
+            if (lastUndoToast) {
+                lastUndoToast?.action?.()
+                removeAlert(lastUndoToast.id)
+            }
+        }
+    }
+
+    document.onkeydown = undo
     return (
         <>
             {Object.values(POSITION_TOASTS).map(position => (
