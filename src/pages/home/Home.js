@@ -121,9 +121,6 @@ const Homepage = () => {
                 isBeforeToday(updatedItem[TASK_MODEL.date])
             )
 
-        const taskToUpdateIndex = newTasks[
-            updatedItem[TASK_MODEL.date]
-        ].findIndex(task => task[TASK_MODEL.id] === updatedItem[TASK_MODEL.id])
         if (isDateChanged) {
             //remove the task from old list
 
@@ -167,12 +164,20 @@ const Homepage = () => {
                 )
                 newTasks[EXPIRES_DATE][taskToUpdateIndex] = updatedItem
             } else {
+                const taskToUpdateIndex = newTasks[
+                    updatedItem[TASK_MODEL.date]
+                ].findIndex(
+                    task => task[TASK_MODEL.id] === updatedItem[TASK_MODEL.id]
+                )
                 newTasks[updatedItem[TASK_MODEL.date]][taskToUpdateIndex] =
                     updatedItem
             }
         }
 
         setTasks({ ...newTasks })
+        const taskToUpdateIndex = tasks[updatedItem[TASK_MODEL.date]].findIndex(
+            task => task[TASK_MODEL.id] === updatedItem[TASK_MODEL.id]
+        )
 
         if (isUndo) {
             const orderedTasks = moveItems(
@@ -191,24 +196,15 @@ const Homepage = () => {
                 severity: SEVERITY_KEYS.undo,
                 title: 'Was it updated by mistake?',
                 position: POSITION_TOASTS.rightBottom,
-                delay: 50000,
+                delay: 5000,
                 action: async () => {
                     const { data } = await TasksAPI.editTask(oldItem)
-
                     setTasks(prevTasks => {
-                        let result = {
+                        const result = {
                             ...prevTasks,
                             ...orderedTasks,
                         }
-                        if (
-                            oldItem[TASK_MODEL.date] ===
-                            updatedItem[TASK_MODEL.date]
-                        ) {
-                            result[oldItem[TASK_MODEL.date]] = prevTasks[
-                                oldItem[TASK_MODEL.date]
-                            ].map(item => (item.id === data.id ? data : item))
-                        }
-
+                        result[oldItem[TASK_MODEL.date]][indexOfOldTask] = data
                         onOrderTasks(result)
                         return result
                     })
