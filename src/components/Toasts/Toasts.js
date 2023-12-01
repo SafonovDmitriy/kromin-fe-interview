@@ -34,11 +34,7 @@ const Toasts = () => {
     const { alertData } = useAlert()
     const classes = useStyles()
 
-    const toasts = alertData.reduce((acc, toast) => {
-        const position = toast.position || POSITION_TOASTS.rightTop
-        !!acc[position] ? acc[position].push(toast) : (acc[position] = [toast])
-        return acc
-    }, {})
+    const toasts = Object.groupBy(alertData, ({ position }) => position)
 
     return (
         <>

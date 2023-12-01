@@ -76,7 +76,7 @@ const useStyles = createUseStyles(theme => ({
 
 const Toast = ({ toast }) => {
     const toastRef = useRef(null)
-    const { removeAlert } = useAlert()
+    const { removeAlert, alertData } = useAlert()
     const stylesConfig = {
         ...SEVERITYS[toast?.severity],
     }
@@ -113,8 +113,14 @@ const Toast = ({ toast }) => {
                 <div
                     className={classes.undoButton}
                     onClick={() => {
-                        toast.action?.()
-                        removeAlert(toast.id)
+                        const lastUndoToast = alertData
+                            .filter(
+                                ({ severity }) =>
+                                    severity === SEVERITY_KEYS.undo
+                            )
+                            .at(-1)
+                        lastUndoToast.action?.()
+                        removeAlert(lastUndoToast.id)
                     }}
                 >
                     <img src={undoArrow} alt="undo" />

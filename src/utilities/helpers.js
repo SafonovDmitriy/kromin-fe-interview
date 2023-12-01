@@ -3,6 +3,8 @@ import isBetween from 'dayjs/plugin/isBetween'
 import isToday from 'dayjs/plugin/isToday'
 import isTomorrow from 'dayjs/plugin/isTomorrow'
 
+export const EXPIRES_DATE = 'Expired'
+
 export const handleApiError = ({
     error,
     handleGeneralError = console.log,
@@ -44,9 +46,11 @@ export const dateRenderer = date => {
     } else if (dayjs(new Date(date)).isTomorrow()) {
         return 'Tomorrow'
     } else {
-        return date === 'Expired' ? date : dayjs(date).format('DD-MM-YYYY')
+        return date === EXPIRES_DATE ? date : dayjs(date).format('DD-MM-YYYY')
     }
 }
+export const dateFormated = date => dayjs(date).format('YYYY-MM-DD')
+
 const EFFORT_LIST = {
     1: '!',
     2: '!!',
@@ -59,8 +63,8 @@ export const groupByDate = array =>
         (r, a) => {
             //check for the expired ones
             if (isBeforeToday(a.date)) {
-                r['Expired'] = r['Expired'] || []
-                r['Expired'].push(a)
+                r[EXPIRES_DATE] = r[EXPIRES_DATE] || []
+                r[EXPIRES_DATE].push(a)
             } else {
                 r[a.date] = r[a.date] || []
                 r[a.date].push(a)
@@ -89,17 +93,21 @@ export const moveItems = (
     droppableSource,
     droppableDestination
 ) => {
+    if (droppableSource.droppableId === droppableDestination.droppableId)
+        return {
+            [droppableSource.droppableId]: source,
+            [droppableDestination.droppableId]: destination,
+        }
     const sourceClone = Array.from(source)
     const destClone = Array.from(destination)
     const [removed] = sourceClone.splice(droppableSource.index, 1)
 
     destClone.splice(droppableDestination.index, 0, removed)
 
-    const result = {}
-    result[droppableSource.droppableId] = sourceClone
-    result[droppableDestination.droppableId] = destClone
-
-    return result
+    return {
+        [droppableSource.droppableId]: sourceClone,
+        [droppableDestination.droppableId]: destClone,
+    }
 }
 
 export const objToFlatArray = obj => {

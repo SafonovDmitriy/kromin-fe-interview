@@ -1,4 +1,3 @@
-import dayjs from 'dayjs'
 import { useEffect, useMemo, useState } from 'react'
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd'
 import { createUseStyles } from 'react-jss'
@@ -6,12 +5,16 @@ import Column from '../../components/Column'
 import Container from '../../components/Container'
 import Row from '../../components/Row'
 import Task from '../../components/Task'
+import { POSITION_TOASTS } from '../../components/Toasts/Toasts'
+import { SEVERITY_KEYS } from '../../components/Toasts/components/Toast'
 import useAlert from '../../hooks/useAlert'
 import useError from '../../hooks/useError'
 import { useWindowSize } from '../../hooks/useWindowSize'
 import TasksAPI from '../../http/task.http'
 import { TASK_MODEL } from '../../models'
 import {
+    EXPIRES_DATE,
+    dateFormated,
     dateIsInRange,
     dateRenderer,
     groupByDate,
@@ -25,8 +28,6 @@ import EditTaskModal from './EditTaskModal'
 import FilterBar from './filter-bar/FilterBar'
 import HomeTableHeader from './home-table-heading'
 import TodoInputBar from './todo-input-bar/TodoInputBar'
-import { SEVERITY_KEYS } from '../../components/Toasts/components/Toast'
-import { POSITION_TOASTS } from '../../components/Toasts/Toasts'
 
 const useStyles = createUseStyles(theme => ({
     taskBodyRoot: {
@@ -86,12 +87,19 @@ const Homepage = () => {
      * Edit task
      * @param oldTask
      * @param newTask
+     * @param isUndo
+     * @param newIndex
      * @returns {Promise<void>}
      */
-    const onEditTask = async (oldTask, newTask) => {
+    const onEditTask = async (oldTask, newTask, isUndo = true, newIndex) => {
         try {
             const { data } = await TasksAPI.editTask(newTask)
-            onUpdateItem(oldTask, data)
+            triggerAlert({
+                severity: SEVERITY_KEYS.success,
+                title: 'A new task has been update to successfully',
+                position: POSITION_TOASTS.rightTop,
+            })
+            onUpdateItem(oldTask, data, isUndo, newIndex)
         } catch (error) {
             handleApiError({
                 error,
@@ -99,37 +107,54 @@ const Homepage = () => {
             })
         }
     }
-    const onUpdateItem = (oldItem, updatedItem) => {
+    const onUpdateItem = (oldItem, updatedItem, isUndo, newIndex) => {
         let newTasks = tasks
+        const indexOfOldTask = tasks[oldItem[TASK_MODEL.date]].findIndex(
+            task => task[TASK_MODEL.id] === oldItem[TASK_MODEL.id]
+        )
+
         const isDateChanged =
-            dayjs(updatedItem[TASK_MODEL.date]).format('YYYY-MM-DD') !==
-                dayjs(oldItem[TASK_MODEL.date]).format('YYYY-MM-DD') &&
+            dateFormated(updatedItem[TASK_MODEL.date]) !==
+                dateFormated(oldItem[TASK_MODEL.date]) &&
             !(
                 isBeforeToday(oldItem[TASK_MODEL.date]) &&
                 isBeforeToday(updatedItem[TASK_MODEL.date])
             )
 
+        const taskToUpdateIndex = newTasks[
+            updatedItem[TASK_MODEL.date]
+        ].findIndex(task => task[TASK_MODEL.id] === updatedItem[TASK_MODEL.id])
         if (isDateChanged) {
             //remove the task from old list
 
             if (isBeforeToday(oldItem[TASK_MODEL.date])) {
-                newTasks['Expired'] = newTasks['Expired'].filter(
-                    task => task[TASK_MODEL.id] !== updatedItem[TASK_MODEL.id]
+                newTasks[EXPIRES_DATE] = newTasks[EXPIRES_DATE].filter(
+                    ({ [TASK_MODEL.id]: id }) =>
+                        id !== updatedItem[TASK_MODEL.id]
                 )
             } else {
                 newTasks[oldItem[TASK_MODEL.date]] = newTasks[
                     oldItem[TASK_MODEL.date]
                 ].filter(
-                    task => task[TASK_MODEL.id] !== updatedItem[TASK_MODEL.id]
+                    ({ [TASK_MODEL.id]: id }) =>
+                        id !== updatedItem[TASK_MODEL.id]
                 )
             }
 
             //add the task in new list
             if (isBeforeToday(updatedItem[TASK_MODEL.date])) {
-                newTasks['Expired'].push(updatedItem)
+                newTasks[EXPIRES_DATE].push(updatedItem)
             } else {
                 if (updatedItem[TASK_MODEL.date] in newTasks) {
-                    newTasks[updatedItem[TASK_MODEL.date]].push(updatedItem)
+                    if (newIndex === undefined) {
+                        newTasks[updatedItem[TASK_MODEL.date]].push(updatedItem)
+                    } else {
+                        newTasks[updatedItem[TASK_MODEL.date]].splice(
+                            newIndex,
+                            0,
+                            updatedItem
+                        )
+                    }
                 } else {
                     newTasks[updatedItem[TASK_MODEL.date]] = [updatedItem]
                 }
@@ -137,34 +162,77 @@ const Homepage = () => {
         } else {
             //update the task in the same list
             if (isBeforeToday(updatedItem[TASK_MODEL.date])) {
-                const taskToUpdateIndex = newTasks['Expired'].findIndex(
+                const taskToUpdateIndex = newTasks[EXPIRES_DATE].findIndex(
                     task => task[TASK_MODEL.id] === updatedItem[TASK_MODEL.id]
                 )
-                newTasks['Expired'][taskToUpdateIndex] = updatedItem
+                newTasks[EXPIRES_DATE][taskToUpdateIndex] = updatedItem
             } else {
-                const taskToUpdateIndex = newTasks[
-                    updatedItem[TASK_MODEL.date]
-                ].findIndex(
-                    task => task[TASK_MODEL.id] === updatedItem[TASK_MODEL.id]
-                )
                 newTasks[updatedItem[TASK_MODEL.date]][taskToUpdateIndex] =
                     updatedItem
             }
         }
+
         setTasks({ ...newTasks })
+
+        if (isUndo) {
+            const orderedTasks = moveItems(
+                tasks[updatedItem[TASK_MODEL.date]],
+                tasks[oldItem[TASK_MODEL.date]],
+                {
+                    droppableId: updatedItem[TASK_MODEL.date],
+                    index: taskToUpdateIndex,
+                },
+                {
+                    droppableId: oldItem[TASK_MODEL.date],
+                    index: indexOfOldTask,
+                }
+            )
+            triggerAlert({
+                severity: SEVERITY_KEYS.undo,
+                title: 'Was it updated by mistake?',
+                position: POSITION_TOASTS.rightBottom,
+                delay: 50000,
+                action: async () => {
+                    const { data } = await TasksAPI.editTask(oldItem)
+
+                    setTasks(prevTasks => {
+                        let result = {
+                            ...prevTasks,
+                            ...orderedTasks,
+                        }
+                        if (
+                            oldItem[TASK_MODEL.date] ===
+                            updatedItem[TASK_MODEL.date]
+                        ) {
+                            result[oldItem[TASK_MODEL.date]] = prevTasks[
+                                oldItem[TASK_MODEL.date]
+                            ].map(item => (item.id === data.id ? data : item))
+                        }
+
+                        onOrderTasks(result)
+                        return result
+                    })
+                },
+            })
+        }
     }
 
     /**
      * Delete Task
      * @param task
      * @param index
+     * @param isUndo
      * @returns {Promise<void>}
      */
-    const onDeleteTask = async (task, index) => {
-        console.log('index', index)
+    const onDeleteTask = async (task, index, isUndo = true) => {
         try {
             await TasksAPI.deleteTask(task[TASK_MODEL.id])
-            onDeleteItem(task[TASK_MODEL.date], index)
+            triggerAlert({
+                severity: SEVERITY_KEYS.success,
+                title: 'A new task has been delete to successfully',
+                position: POSITION_TOASTS.rightTop,
+            })
+            onDeleteItem(task[TASK_MODEL.date], index, isUndo)
         } catch (error) {
             handleApiError({
                 error,
@@ -172,16 +240,37 @@ const Homepage = () => {
             })
         }
     }
-    const onDeleteItem = (key, index) => {
+    const onDeleteItem = (key, index, isUndo) => {
         let newTasks = tasks
+        const deletedTask = tasks[key][index]
+
         //remember that key is => date
         //check if is Expired
-        if (isBeforeToday(key)) {
-            newTasks['Expired'].splice(index, 1)
-        } else {
-            newTasks[key].splice(index, 1)
-        }
+
+        newTasks[isBeforeToday(key) ? EXPIRES_DATE : key].splice(index, 1)
         setTasks({ ...newTasks })
+
+        isUndo &&
+            triggerAlert({
+                severity: SEVERITY_KEYS.undo,
+                title: 'Was it delete by mistake?',
+                position: POSITION_TOASTS.rightBottom,
+                delay: 5000,
+                action: async () => {
+                    const { data } = await TasksAPI.addTask(deletedTask)
+
+                    setTasks(prevTasks => {
+                        const tasks = [...prevTasks[key]]
+                        tasks.splice(index, 0, data)
+                        const result = {
+                            ...prevTasks,
+                            [key]: tasks,
+                        }
+                        onOrderTasks(result)
+                        return result
+                    })
+                },
+            })
     }
 
     /**
@@ -229,7 +318,12 @@ const Homepage = () => {
             newState[sInd] = result[sInd]
             newState[dInd] = result[dInd]
             const task = newState[dInd][destination.index]
-            onEditTask(task, { ...task, date: dInd })
+            onEditTask(
+                task,
+                { ...task, [TASK_MODEL.date]: dInd },
+                true,
+                destination.index
+            )
             setTasks({ ...newState })
         }
 
@@ -239,47 +333,48 @@ const Homepage = () => {
     /**
      * Add Task
      * @param task
+     * @param isUndo
      * @returns {Promise<void>}
      */
-    const onAddTasks = async task => {
+    const onAddTasks = async (task, isUndo = true) => {
         const { data } = await TasksAPI.addTask(task)
-        onAddItem(data)
-    }
-    const onAddItem = newItem => {
-        let newTasks = tasks
-        if (newItem?.date in newTasks) {
-            newTasks[newItem?.date].push(newItem)
-        } else {
-            newTasks[newItem?.date] = newTasks[newItem?.date] || []
-            newTasks[newItem?.date].push(newItem)
-        }
-        setTasks({
-            ...groupByDate(
-                Object.values(newTasks).reduce((acc, date) => {
-                    acc.push(...date)
-                    return acc
-                }, [])
-            ),
-        })
         triggerAlert({
             severity: SEVERITY_KEYS.success,
             title: 'A new task has been created to successfully',
             position: POSITION_TOASTS.rightTop,
         })
-        triggerAlert({
-            severity: SEVERITY_KEYS.undo,
-            title: 'Was it created by mistake?',
-            position: POSITION_TOASTS.rightBottom,
-            delay: 5000,
-            action: () => {
-                onDeleteTask(
-                    newItem,
-                    newTasks[newItem.date].findIndex(
-                        task => task.id === newItem.id
+        onAddItem(data, isUndo)
+    }
+
+    const onAddItem = (newItem, isUndo) => {
+        let newTasks = tasks
+        if (newItem?.[TASK_MODEL.date] in newTasks) {
+            newTasks[newItem?.[TASK_MODEL.date]].push(newItem)
+        } else {
+            newTasks[newItem?.[TASK_MODEL.date]] =
+                newTasks[newItem?.[TASK_MODEL.date]] || []
+            newTasks[newItem?.[TASK_MODEL.date]].push(newItem)
+        }
+
+        setTasks(groupByDate(Object.values(newTasks).flat()))
+
+        isUndo &&
+            triggerAlert({
+                severity: SEVERITY_KEYS.undo,
+                title: 'Was it created by mistake?',
+                position: POSITION_TOASTS.rightBottom,
+                delay: 5000,
+                action: () => {
+                    onDeleteTask(
+                        newItem,
+                        newTasks[newItem[TASK_MODEL.date]].findIndex(
+                            task =>
+                                task[TASK_MODEL.id] === newItem[TASK_MODEL.id]
+                        ),
+                        false
                     )
-                )
-            },
-        })
+                },
+            })
     }
 
     const filteredTasks = useMemo(() => {
@@ -326,7 +421,7 @@ const Homepage = () => {
                                     <Droppable
                                         key={date}
                                         droppableId={`${date}`}
-                                        isDropDisabled={date === 'Expired'}
+                                        isDropDisabled={date === EXPIRES_DATE}
                                     >
                                         {(provided, snapshot) => (
                                             <div
