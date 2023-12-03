@@ -2,6 +2,7 @@ import dayjs from 'dayjs'
 import isBetween from 'dayjs/plugin/isBetween'
 import isToday from 'dayjs/plugin/isToday'
 import isTomorrow from 'dayjs/plugin/isTomorrow'
+import { TASK_MODEL } from '../models'
 
 export const EXPIRES_DATE = 'Expired'
 
@@ -58,25 +59,15 @@ const EFFORT_LIST = {
 }
 export const effortRenderer = effort => EFFORT_LIST[effort] || ''
 
-export const groupByDate = array =>
-    array.reduce(
-        (r, a) => {
-            //check for the expired ones
-            if (isBeforeToday(a.date)) {
-                r[EXPIRES_DATE] = r[EXPIRES_DATE] || []
-                r[EXPIRES_DATE].push(a)
-            } else {
-                r[a.date] = r[a.date] || []
-                r[a.date].push(a)
-            }
-            return r
-        },
-        [...new Set(array.map(({ date }) => date))]
-            .sort()
-            .reduce((acc, key) => {
-                acc[key] = []
-                return acc
-            }, {})
+export const groupByDate = (array, isIncrementally = true) =>
+    Object.groupBy(
+        array.sort((a, b) =>
+            isIncrementally
+                ? new Date(a.date) - new Date(b.date)
+                : new Date(b.date) - new Date(a.date)
+        ),
+        task =>
+            isBeforeToday(task.date) ? [EXPIRES_DATE] : [task[TASK_MODEL.date]]
     )
 
 export const reorderItems = (list, startIndex, endIndex) => {
@@ -110,15 +101,7 @@ export const moveItems = (
     }
 }
 
-export const objToFlatArray = obj => {
-    let result = []
-    Object.keys(obj).forEach(key => {
-        const array = obj[key]
-        result = [...result, ...array]
-    })
-
-    return result
-}
+export const objToFlatArray = obj => Object.values(obj).flat()
 
 export const formatDate = (
     date,
@@ -134,4 +117,33 @@ export const dateIsInRange = (date, startDate, endDate) => {
 export const retrieveSingleValueForRs = (options, value) => {
     if (value === null || value === '' || value === undefined) return null
     return options.find(option => option.value.toString() === value.toString())
+}
+
+export const getDateAndIndex = (task, tasksList) => {
+    const date = isBeforeToday(task[TASK_MODEL.date])
+        ? EXPIRES_DATE
+        : task[TASK_MODEL.date]
+    const index = tasksList[date].findIndex(
+        ({ [TASK_MODEL.id]: id }) => id === task.id
+    )
+    return { date, index }
+}
+
+export function debounce(func, timeout = 300) {
+    let timer
+    return (...args) => {
+        clearTimeout(timer)
+        timer = setTimeout(() => {
+            func.apply(this, args)
+        }, timeout)
+    }
+}
+export const getParams = data => {
+    if (!data) return ''
+    let params = !!Object.keys(data).length ? '?' : ''
+    for (const key in data)
+        if (!!data[key] || typeof data[key] === 'boolean')
+            params += `${params.length > 1 ? '&' : ''}${key}=${data[key]}`
+
+    return params
 }

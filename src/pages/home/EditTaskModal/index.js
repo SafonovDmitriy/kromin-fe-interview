@@ -68,14 +68,7 @@ const EditTaskModal = ({ onClose, onUpdateCb, task }) => {
         onClose()
     }
 
-    const {
-        handleSubmit,
-        register,
-        control,
-        reset,
-        setValue,
-        formState: { errors },
-    } = useForm({
+    const { handleSubmit, register, control, reset } = useForm({
         shouldUnregister: false,
         mode: 'onBlur',
         reValidateMode: 'onChange',

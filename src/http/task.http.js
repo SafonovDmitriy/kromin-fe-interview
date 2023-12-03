@@ -1,13 +1,14 @@
 import axios from './'
 import { TASK_MODEL } from '../models'
+import { getParams } from '../utilities/helpers'
 
 const TasksAPI = {
-    getTasks: () => {
-        const url = '/todos'
+    getTasks: data => {
+        const url = `/todos${getParams(data)}`
         return axios.get(url)
     },
-    getTasksCompleted: page => {
-        const url = `/todos/completed?page=${page}`
+    getTasksCompleted: data => {
+        const url = `/todos/completed${getParams(data)}`
         return axios.get(url)
     },
     addTask: data => {
@@ -25,6 +26,10 @@ const TasksAPI = {
     orderTasks: data => {
         const url = '/todos/order'
         return axios.post(url, { todos: [...data] })
+    },
+    restoreTask: data => {
+        const url = `/todos/${data[TASK_MODEL.id]}/restore`
+        return axios.post(url, data)
     },
 }
 

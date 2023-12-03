@@ -263,7 +263,9 @@ const TodoInputBar = ({ task = {}, onAddTaskCb, onEditTaskCb, onCancelCb }) => {
                                 </div>
                                 <div className={classes.actionsMobile}>
                                     <Button
-                                        disabled={!inputText || !date}
+                                        disabled={
+                                            !inputText || !date || !priority
+                                        }
                                         onClick={onConfirm}
                                     >
                                         Add

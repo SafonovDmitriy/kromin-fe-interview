@@ -17,6 +17,7 @@ import {
     dateFormated,
     dateIsInRange,
     dateRenderer,
+    getDateAndIndex,
     groupByDate,
     handleApiError,
     isBeforeToday,
@@ -108,10 +109,11 @@ const Homepage = () => {
         }
     }
     const onUpdateItem = (oldItem, updatedItem, isUndo, newIndex) => {
-        let newTasks = tasks
-        const indexOfOldTask = tasks[oldItem[TASK_MODEL.date]].findIndex(
-            task => task[TASK_MODEL.id] === oldItem[TASK_MODEL.id]
+        const { date: dateOfOldTask, index: indexOfOldTask } = getDateAndIndex(
+            oldItem,
+            tasks
         )
+        let newTasks = tasks
 
         const isDateChanged =
             dateFormated(updatedItem[TASK_MODEL.date]) !==
@@ -175,20 +177,19 @@ const Homepage = () => {
         }
 
         setTasks({ ...newTasks })
-        const taskToUpdateIndex = tasks[updatedItem[TASK_MODEL.date]].findIndex(
-            task => task[TASK_MODEL.id] === updatedItem[TASK_MODEL.id]
-        )
+        const { date: taskToUpdateDate, index: taskToUpdateIndex } =
+            getDateAndIndex(updatedItem, newTasks)
 
         if (isUndo) {
             const orderedTasks = moveItems(
-                tasks[updatedItem[TASK_MODEL.date]],
-                tasks[oldItem[TASK_MODEL.date]],
+                tasks[taskToUpdateDate],
+                tasks[dateOfOldTask],
                 {
-                    droppableId: updatedItem[TASK_MODEL.date],
+                    droppableId: taskToUpdateDate,
                     index: taskToUpdateIndex,
                 },
                 {
-                    droppableId: oldItem[TASK_MODEL.date],
+                    droppableId: dateOfOldTask,
                     index: indexOfOldTask,
                 }
             )
@@ -204,7 +205,7 @@ const Homepage = () => {
                             ...prevTasks,
                             ...orderedTasks,
                         }
-                        result[oldItem[TASK_MODEL.date]][indexOfOldTask] = data
+                        result[dateOfOldTask][indexOfOldTask] = data
                         onOrderTasks(result)
                         return result
                     })
@@ -220,7 +221,7 @@ const Homepage = () => {
      * @param isUndo
      * @returns {Promise<void>}
      */
-    const onDeleteTask = async (task, index, isUndo = true) => {
+    const onDeleteTask = async (task, isUndo = true) => {
         try {
             await TasksAPI.deleteTask(task[TASK_MODEL.id])
             triggerAlert({
@@ -228,7 +229,7 @@ const Homepage = () => {
                 title: 'A new task has been delete to successfully',
                 position: POSITION_TOASTS.rightBottom,
             })
-            onDeleteItem(task[TASK_MODEL.date], index, isUndo)
+            onDeleteItem(task, isUndo)
         } catch (error) {
             handleApiError({
                 error,
@@ -236,14 +237,11 @@ const Homepage = () => {
             })
         }
     }
-    const onDeleteItem = (key, index, isUndo) => {
+    const onDeleteItem = (task, isUndo) => {
+        const { date, index } = getDateAndIndex(task, tasks)
         let newTasks = tasks
-        const deletedTask = tasks[key][index]
 
-        //remember that key is => date
-        //check if is Expired
-
-        newTasks[isBeforeToday(key) ? EXPIRES_DATE : key].splice(index, 1)
+        newTasks[date].splice(index, 1)
         setTasks({ ...newTasks })
 
         isUndo &&
@@ -253,17 +251,14 @@ const Homepage = () => {
                 position: POSITION_TOASTS.rightBottom,
                 delay: 5000,
                 action: async () => {
-                    const { data } = await TasksAPI.addTask(deletedTask)
-
+                    const { data } = await TasksAPI.restoreTask(task)
                     setTasks(prevTasks => {
-                        const tasks = [...prevTasks[key]]
+                        const tasks = [...prevTasks[date]]
                         tasks.splice(index, 0, data)
-                        const result = {
+                        return {
                             ...prevTasks,
-                            [key]: tasks,
+                            [date]: tasks,
                         }
-                        onOrderTasks(result)
-                        return result
                     })
                 },
             })
@@ -352,7 +347,7 @@ const Homepage = () => {
             newTasks[newItem?.[TASK_MODEL.date]].push(newItem)
         }
 
-        setTasks(groupByDate(Object.values(newTasks).flat()))
+        setTasks(groupByDate(objToFlatArray(newTasks)))
 
         isUndo &&
             triggerAlert({
@@ -361,14 +356,7 @@ const Homepage = () => {
                 position: POSITION_TOASTS.rightBottom,
                 delay: 5000,
                 action: () => {
-                    onDeleteTask(
-                        newItem,
-                        newTasks[newItem[TASK_MODEL.date]].findIndex(
-                            task =>
-                                task[TASK_MODEL.id] === newItem[TASK_MODEL.id]
-                        ),
-                        false
-                    )
+                    onDeleteTask(newItem, false)
                 },
             })
     }
@@ -449,9 +437,6 @@ const Homepage = () => {
                                                                     <Task
                                                                         task={
                                                                             task
-                                                                        }
-                                                                        index={
-                                                                            index
                                                                         }
                                                                         isLast={
                                                                             tasks[
