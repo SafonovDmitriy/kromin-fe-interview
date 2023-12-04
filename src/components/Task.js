@@ -197,7 +197,7 @@ const Task = forwardRef(
                             {task?.[TASK_MODEL.description]}
                         </span>
                         <span className={classes.date}>
-                            {task?.[TASK_MODEL.date](task?.[TASK_MODEL.date])}
+                            {dateFormated(task?.[TASK_MODEL.date])}
                         </span>
                         <span className={classes.priority}>
                             {effortRenderer(task[TASK_MODEL.effort])}

@@ -170,6 +170,10 @@ const Completed = () => {
     const [openedTask, setOpenedTask] = useState(null)
 
     useEffect(() => {
+        setPage(1)
+    }, [searchInput, priority, dateFilter])
+
+    useEffect(() => {
         fetchTasks().then(({ data }) => {
             setTasks(prevTasks =>
                 page > 1
